@@ -1,0 +1,220 @@
+﻿<UserControl x:Class="WpfApp1.FigureGrid"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WpfApp1"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style x:Key="RenderTriggers" TargetType="{x:Type Image}">
+            <Style.Triggers >
+                <DataTrigger Binding="{Binding State}" Value="DownBall">
+                    <Setter Property="Source" Value="../images/DownBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRing">
+                    <Setter Property="Source" Value="../images/DownHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Empty">
+                    <Setter Property="Source" Value="../images/Empty.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Hole">
+                    <Setter Property="Source" Value="../images/Hole.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftBall">
+                    <Setter Property="Source" Value="../images/LeftBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftDownRing">
+                    <Setter Property="Source" Value="../images/LeftDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRing">
+                    <Setter Property="Source" Value="../images/LeftHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftRightRing">
+                    <Setter Property="Source" Value="../images/LeftRightRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftRightCompound">
+                    <Setter Property="Source" Value="../images/LeftRightCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftUpRing">
+                    <Setter Property="Source" Value="../images/LeftUpRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightBall">
+                    <Setter Property="Source" Value="../images/RightBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightDownRing">
+                    <Setter Property="Source" Value="../images/RightDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRing">
+                    <Setter Property="Source" Value="../images/RightHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightUpRing">
+                    <Setter Property="Source" Value="../images/RightUpRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpBall">
+                    <Setter Property="Source" Value="../images/UpBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpDownCompound">
+                    <Setter Property="Source" Value="../images/UpDownCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRing">
+                    <Setter Property="Source" Value="../images/UpHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpDownRing">
+                    <Setter Property="Source" Value="../images/UpDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRingL">
+                    <Setter Property="Source" Value="../images/DownHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRingR">
+                    <Setter Property="Source" Value="../images/DownHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRingL">
+                    <Setter Property="Source" Value="../images/UpHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRingR">
+                    <Setter Property="Source" Value="../images/UpHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRingL">
+                    <Setter Property="Source" Value="../images/LeftHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRingR">
+                    <Setter Property="Source" Value="../images/LeftHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRingL">
+                    <Setter Property="Source" Value="../images/RightHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRingR">
+                    <Setter Property="Source" Value="../images/RightHalfRingR.png"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+        <UniformGrid>
+        <ItemsControl  ItemsSource="{Binding Figures}" Margin="10,10,10,10">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ItemsControl  ItemsSource="{Binding FigureArea}" BorderBrush="#FF5D1008" BorderThickness="10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+
+                                <Button > 
+                                    <Button.Style>
+
+                                        <Style TargetType="{x:Type Button}">
+                                            <Setter Property="Width" Value="30"/>
+                                            <Setter Property="Height" Value="30"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Row}" Value="3"/>
+                                                        <Condition Binding="{Binding Column}" Value="0"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <MultiDataTrigger.Setters>
+                                                        <Setter Property="Width" Value ="30"/>
+                                                        <Setter Property="Height" Value="20"/>
+                                                        <Setter Property="Background" Value="LightGreen"/>
+                                                        <Setter Property="Command" Value="{Binding DataContext.InsertCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                        <Setter Property="CommandParameter" Value="{Binding DataContext.Index, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl },AncestorLevel=1}}"/>
+                                                    </MultiDataTrigger.Setters>
+                                                </MultiDataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Row}" Value="3"/>
+                                                        <Condition Binding="{Binding Column}" Value="1"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <MultiDataTrigger.Setters>
+                                                        <Setter Property="Visibility" Value ="Collapsed"/>
+                                                        
+                                                    </MultiDataTrigger.Setters>
+                                                </MultiDataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Row}" Value="3"/>
+                                                        <Condition Binding="{Binding Column}" Value="2"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <MultiDataTrigger.Setters>
+                                                        <Setter Property="Width" Value ="30"/>
+                                                        <Setter Property="Height" Value="20"/>
+                                                        <Setter Property="Background" Value ="MistyRose"/>
+                                                        <Setter Property="Command" Value="{Binding DataContext.RotateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                        <Setter Property="CommandParameter" Value="{Binding DataContext.Index, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl },AncestorLevel=1}}"/>
+                                                    </MultiDataTrigger.Setters>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+
+
+                                    <Border>
+                                        <Border.Style>
+                                            <Style TargetType="{x:Type Border}">
+                                                
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Row}" Value="3"/>
+                                                            <Condition Binding="{Binding Column}" Value="0"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <MultiDataTrigger.Setters>
+                                                            <Setter Property="Visibility" Value="Collapsed"  />
+                                                            
+                                                        </MultiDataTrigger.Setters>
+                                                        
+                                                    </MultiDataTrigger>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Row}" Value="3"/>
+                                                            <Condition Binding="{Binding Column}" Value="2"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <MultiDataTrigger.Setters>
+                                                            <Setter Property="Visibility" Value="Collapsed"  />
+                                                             
+                                                        </MultiDataTrigger.Setters>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                                <Setter Property="Background" Value="White"/>
+                                                <Setter Property="BorderBrush" Value="Gray"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="Width" Value="30"/>
+                                                <Setter Property="Height" Value="30"/>
+                                               
+                                            </Style>
+                                        </Border.Style>
+                                        <Image Style="{StaticResource RenderTriggers}"/>
+                                    </Border>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid 
+                            Rows="4" 
+                            Columns="3"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        
+                    </ItemsControl>
+                    
+                </DataTemplate>
+                
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid 
+                            Rows="6" 
+                            Columns="4"
+                            Margin="0"
+                            />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+       
+    </UniformGrid>
+
+</UserControl>

@@ -1,0 +1,196 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        Title="Замощение плоскости фигурами" Height="900" Width="1500">
+    <Window.Resources>
+        <local:VisibilityConventer x:Key="VisibilityConverter"/>
+        <local:IsEnabledConverter x:Key="IsEnabledConverter"/>
+        
+        <Style TargetType="ComboBox" x:Key="SizeComboBox">
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="SelectedIndex" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <Style x:Key="RenderTriggers" TargetType="{x:Type Image}">
+            <Style.Triggers >
+                <DataTrigger Binding="{Binding State}" Value="DownBall">
+                    <Setter Property="Source" Value="images/DownBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRing">
+                    <Setter Property="Source" Value="images/DownHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Empty">
+                    <Setter Property="Source" Value="images/Empty.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="Hole">
+                    <Setter Property="Source" Value="images/Hole.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftBall">
+                    <Setter Property="Source" Value="images/LeftBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftDownRing">
+                    <Setter Property="Source" Value="images/LeftDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRing">
+                    <Setter Property="Source" Value="images/LeftHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftRightRing">
+                    <Setter Property="Source" Value="images/LeftRightRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftRightCompound">
+                    <Setter Property="Source" Value="images/LeftRightCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftUpRing">
+                    <Setter Property="Source" Value="images/LeftUpRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightBall">
+                    <Setter Property="Source" Value="images/RightBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightDownRing">
+                    <Setter Property="Source" Value="images/RightDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRing">
+                    <Setter Property="Source" Value="images/RightHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightUpRing">
+                    <Setter Property="Source" Value="images/RightUpRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpBall">
+                    <Setter Property="Source" Value="images/UpBall.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpDownCompound">
+                    <Setter Property="Source" Value="images/UpDownCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRing">
+                    <Setter Property="Source" Value="images/UpHalfRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpDownRing">
+                    <Setter Property="Source" Value="images/UpDownRing.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftDownCompound">
+                    <Setter Property="Source" Value="images/LeftDownCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftUpCompound">
+                    <Setter Property="Source" Value="images/LeftUpCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightDownCompound">
+                    <Setter Property="Source" Value="images/RightDownCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightUpCompound">
+                    <Setter Property="Source" Value="images/RightUpCompound.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRingL">
+                    <Setter Property="Source" Value="images/DownHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="DownHalfRingR">
+                    <Setter Property="Source" Value="images/DownHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRingL">
+                    <Setter Property="Source" Value="images/UpHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="UpHalfRingR">
+                    <Setter Property="Source" Value="images/UpHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRingL">
+                    <Setter Property="Source" Value="images/LeftHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="LeftHalfRingR">
+                    <Setter Property="Source" Value="images/LeftHalfRingR.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRingL">
+                    <Setter Property="Source" Value="images/RightHalfRingL.png"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="RightHalfRingR">
+                    <Setter Property="Source" Value="images/RightHalfRingR.png"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid RenderTransformOrigin="0.614,0.461">
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FFF0F0F0" Offset="0"/>
+                <GradientStop Color="#FFE0FDF9" Offset="1"/>
+                <GradientStop Color="#FFB1C8C5" Offset="0.904"/>
+                <GradientStop Color="#FFB1C8C5" Offset="0.571"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <TextBlock Text="Количество строк:" Margin="50,50,0,0" FontSize="13"/>
+        <ComboBox Name="RowsCount" Margin="50,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}"  >
+        </ComboBox>
+        <TextBlock Text="Количество столбцов:" Margin="200,50,0,0" FontSize="13"/>
+        <ComboBox Name="ColumnsCount" Margin="200,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}" >
+        </ComboBox>
+        <TextBlock Text="Количество дырок:" Margin="350,50,0,0" FontSize="13"/>
+        <ComboBox Name="HolesCount" Margin="350,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}" >
+        </ComboBox>
+        <Button Content="Создать"  Width="75"  HorizontalAlignment="Left" VerticalAlignment="Top"  Margin="500,80,0,0" Click="NewGame_Click" BorderBrush="#FF777E38" Foreground="#FF5309D4" FontWeight="Bold" FontFamily="Showcard Gothic" FontSize="14">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black" Offset="0"/>
+                    <GradientStop Color="#FF8FB8CB" Offset="1"/>
+                    <GradientStop Color="#FFF1FEFF" Offset="0.089"/>
+                </LinearGradientBrush>
+            </Button.Background>
+
+        </Button>
+
+
+        <ItemsControl Name="MainFieldControl" ItemsSource="{Binding Field}" HorizontalAlignment="Left" Width="639" Margin="0,0,0,0" Foreground="White" >
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Width="40" Height="40" Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding }">
+                        <Button.Style>
+
+                            <Style TargetType="{x:Type Button}">
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Active}" Value="true">
+                                        <Setter Property="BorderBrush" Value="Red" />
+                                        <Setter Property="BorderThickness" Value="2"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Border Width="40" Height="40" >
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="BorderBrush" Value="Gray"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                </Style>
+                            </Border.Style>
+                            <Image Style="{StaticResource RenderTriggers}">
+                            </Image>
+                        </Border>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid 
+                            Rows="{Binding Rows}" 
+                            Columns="{Binding Columns}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                        />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+        <local:FigureGrid Margin="639,0,0,0" Foreground="White" BorderBrush="#FF5D1008" Background="#FFC3664C" BorderThickness="10"/>
+        <TextBlock Text="Поле покрыто! Победа!" Margin="154,0,1022,819" FontSize="25" FontWeight="Bold" FontFamily="Areal" Height="50"  Visibility="{Binding IsCovered, Converter={StaticResource VisibilityConverter}}"/>
+        <Button x:Name="CancelBtn" Content="Отмена"  Width="100" Height="30" Margin="268,772,1106,59" IsEnabled="{Binding PrevField, Converter={StaticResource IsEnabledConverter}}" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" Background="#FFFB0000" FontSize="16" FontWeight="Bold" Click="CancelBtn_Click" >
+        
+        </Button>
+    </Grid>
+</Window>
