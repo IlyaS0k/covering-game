@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
@@ -9,15 +10,19 @@ namespace WpfApp1
     {
         private int _rows = 2;
         private int _columns = 2;
+        private int _holes = 0;
         private bool _isCovered = false;
-
+        private List<int> _rcSource = Enumerable.Range(2, 14).ToList();
+        private List<int> _holesSource = Enumerable.Range(0, 100).ToList();
         private Field _field;
-        private Field _prevField = null;
+        private List<Field> _prevField = new List<Field>(0);
         private Figure[] _figures;
-
         private ICommand _cellCommand;
         private ICommand _insertCommand;
         private ICommand _rotateCommand;
+        private ICommand _newGameCommand;
+        private ICommand _cancelCommand;
+
         public bool IsCovered
         {
             get => _isCovered;
@@ -27,7 +32,6 @@ namespace WpfApp1
                 OnPropertyChanged("IsCovered");
             }
         }
-
         public Field Field
         {
             get => _field;
@@ -37,7 +41,7 @@ namespace WpfApp1
                 OnPropertyChanged("Field");
             }
         }
-        public Field PrevField
+        public List<Field> PrevField
         {
             get => _prevField;
             set
@@ -55,14 +59,13 @@ namespace WpfApp1
                 OnPropertyChanged("Figures");
             }
         }
-
         public int Rows
         {
             get => _rows;
             set
             {
                 _rows = value;
-                OnPropertyChanged();
+                OnPropertyChanged("Rows");
             }
         }
         public int Columns
@@ -71,11 +74,43 @@ namespace WpfApp1
             set
             {
                 _columns = value;
+                OnPropertyChanged("Columns");
+            }
+        }
+        public int Holes
+        {
+            get => _holes;
+            set
+            {
+                _holes = value;
+                OnPropertyChanged("Holes");
+            }
+        }
+        public List<int> RCSource
+        {
+            get => _rcSource;
+            set
+            {
+                _rcSource = value;
+                OnPropertyChanged();
+            }
+        }
+        public List<int> HolesSource
+        {
+            get => _holesSource;
+            set
+            {
+                _holesSource = value;
                 OnPropertyChanged();
             }
         }
 
-
+        public void BackStep()
+        {
+            if (PrevField.Count == 1) return;
+            PrevField.RemoveAt(PrevField.Count - 1);
+            Field = PrevField[PrevField.Count - 1];
+        }
         public void GenerateHoles(int count)
         {
             Random random = new Random();
@@ -92,7 +127,7 @@ namespace WpfApp1
         }
         public void SetFigures()
         {
-            Figure[] figures = new Figure[24];
+            Figure[] figures = new Figure[26];
 
             Figure f0 = new Figure();
             f0.FigureArea[1, 0].State = State.RightBall;
@@ -233,8 +268,22 @@ namespace WpfApp1
             f22.Index = 22;
 
             Figure f23 = new Figure();
-            f23.FigureArea[1, 1].State = State.Hole;// *
+            f23.FigureArea[1, 0].State = State.RightHalfRingR;//
+            f23.FigureArea[1, 1].State = State.LeftRightRing; // u-0-u
+            f23.FigureArea[1, 2].State = State.LeftHalfRingL;
             f23.Index = 23;
+
+            Figure f24 = new Figure();
+            f24.FigureArea[1, 0].State = State.RightHalfRingL;//
+            f24.FigureArea[1, 1].State = State.LeftRightRing; // n-0-u
+            f24.FigureArea[1, 2].State = State.LeftHalfRingL;
+            f24.Index = 24;
+
+            Figure f25 = new Figure();
+            f25.FigureArea[1, 0].State = State.RightHalfRingR;//
+            f25.FigureArea[1, 1].State = State.LeftRightRing; // n-0-u
+            f25.FigureArea[1, 2].State = State.LeftHalfRingR;
+            f25.Index = 25;
 
             figures[0] = f0;
             figures[1] = f1;
@@ -260,115 +309,11 @@ namespace WpfApp1
             figures[21] = f21;
             figures[22] = f22;
             figures[23] = f23;
+            figures[24] = f24;
+            figures[25] = f25;
 
             Figures = figures;
         }
-        public ICommand CellCommand => _cellCommand = new RelayCommand(parameter =>
-        {
-            Cell cell = (Cell)parameter;
-            Cell activeCell = Field.FirstOrDefault(x => x.Active);
-            cell.Active = true;
-            if (activeCell != null)
-            {
-                activeCell.Active = false;
-            }
-        }, parameter => parameter is Cell cell);
-
-        public ICommand RotateCommand => _rotateCommand = new RelayCommand(parameter =>
-        {
-            int idx = (int)parameter;
-
-            Figure tmp = new Figure();
-            for (int i = 0; i < 3; ++i)
-            {
-                for (int j = 0; j < 3; ++j)
-                {
-                    tmp.FigureArea[i, j].State = Figures[idx].FigureArea[i, j].State;
-                }
-            }
-
-            Figures[idx].FigureArea[0, 2].State = StateRotator(tmp.FigureArea[0, 0].State);
-            Figures[idx].FigureArea[1, 2].State = StateRotator(tmp.FigureArea[0, 1].State);
-            Figures[idx].FigureArea[2, 2].State = StateRotator(tmp.FigureArea[0, 2].State);
-            Figures[idx].FigureArea[0, 1].State = StateRotator(tmp.FigureArea[1, 0].State);
-            Figures[idx].FigureArea[1, 1].State = StateRotator(tmp.FigureArea[1, 1].State);
-            Figures[idx].FigureArea[2, 1].State = StateRotator(tmp.FigureArea[1, 2].State);
-            Figures[idx].FigureArea[0, 0].State = StateRotator(tmp.FigureArea[2, 0].State);
-            Figures[idx].FigureArea[1, 0].State = StateRotator(tmp.FigureArea[2, 1].State);
-            Figures[idx].FigureArea[2, 0].State = StateRotator(tmp.FigureArea[2, 2].State);
-
-
-        }, parameter => parameter is int);
-        public ICommand InsertCommand => _insertCommand = new RelayCommand(parameter =>
-        {
-            int idx = (int)parameter;
-            Cell activeCell = Field.FirstOrDefault(x => x.Active);
-            Figure figure = Figures[idx];
-            if (activeCell != null)
-            {
-
-                if (IsCanInsert(activeCell, figure))
-                {
-                    PrevField = new Field(Rows, Columns);
-                    for (int i = 0; i < Rows; ++i)
-                    {
-                        for (int j = 0; j < Columns; ++j)
-                        {
-                            PrevField[i, j] = new Cell(i, j);
-                            PrevField[i, j].State = Field[i, j].State;
-
-                        }
-                    }
-                    for (int i = 0; i < 3; ++i)
-                    {
-                        for (int j = 0; j < 3; ++j)
-                        {
-                            int x = activeCell.Row + i - 1;
-                            int y = activeCell.Column + j - 1;
-                            Cell cell = figure.FigureArea[i, j];
-                            State state = cell.State;
-                            if (state == State.Empty) continue;
-                            if (Field[x, y].State == State.Empty)
-                            {
-                                Field[x, y].State = state;
-                                continue;
-                            }
-                            if (Field[x, y].State == State.DownHalfRing || Field[x, y].State == State.UpHalfRing || state == State.DownHalfRing || state == State.UpHalfRing)
-                            {
-                                Field[x, y].State = State.UpDownCompound;
-                            }
-                            if (Field[x, y].State == State.LeftHalfRing || Field[x, y].State == State.RightHalfRing || state == State.LeftHalfRing || state == State.RightHalfRing)
-                            {
-                                Field[x, y].State = State.LeftRightCompound;
-                            }
-                            if (Field[x, y].State == State.DownHalfRingR || state == State.DownHalfRingR || Field[x, y].State == State.RightHalfRingL || state == State.RightHalfRingL)
-                            {
-                                Field[x, y].State = State.RightDownCompound;
-                            }
-                            if (Field[x, y].State == State.DownHalfRingL || state == State.DownHalfRingL || Field[x, y].State == State.LeftHalfRingR || state == State.LeftHalfRingR)
-                            {
-                                Field[x, y].State = State.LeftDownCompound;
-                            }
-                            if (Field[x, y].State == State.UpHalfRingR || state == State.UpHalfRingR || Field[x, y].State == State.LeftHalfRingL || state == State.LeftHalfRingL)
-                            {
-                                Field[x, y].State = State.LeftUpCompound;
-                            }
-                            if (Field[x, y].State == State.UpHalfRingL || state == State.UpHalfRingL || Field[x, y].State == State.RightHalfRingR || state == State.RightHalfRingR)
-                            {
-                                Field[x, y].State = State.RightUpCompound;
-                            }
-                        }
-                    }
-                    
-                    if (Field.FirstOrDefault(x => x.State == State.Empty) == null)
-                    {
-                        IsCovered = true;
-                    }
-                }
-            }
-
-        }, parameter => parameter is int);
-
         public bool IsCanInsert(Cell activeCell, Figure figure)
         {
 
@@ -548,6 +493,134 @@ namespace WpfApp1
             }
 
         }
+
+        public ICommand CellCommand => _cellCommand = new RelayCommand(parameter =>
+        {
+            Cell cell = (Cell)parameter;
+            Cell activeCell = Field.FirstOrDefault(x => x.Active);
+            cell.Active = true;
+            if (activeCell != null)
+            {
+                activeCell.Active = false;
+            }
+        }, parameter => parameter is Cell cell);
+        public ICommand RotateCommand => _rotateCommand = new RelayCommand(parameter =>
+        {
+            int idx = (int)parameter;
+
+            Figure tmp = new Figure();
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    tmp.FigureArea[i, j].State = Figures[idx].FigureArea[i, j].State;
+                }
+            }
+
+            Figures[idx].FigureArea[0, 2].State = StateRotator(tmp.FigureArea[0, 0].State);
+            Figures[idx].FigureArea[1, 2].State = StateRotator(tmp.FigureArea[0, 1].State);
+            Figures[idx].FigureArea[2, 2].State = StateRotator(tmp.FigureArea[0, 2].State);
+            Figures[idx].FigureArea[0, 1].State = StateRotator(tmp.FigureArea[1, 0].State);
+            Figures[idx].FigureArea[1, 1].State = StateRotator(tmp.FigureArea[1, 1].State);
+            Figures[idx].FigureArea[2, 1].State = StateRotator(tmp.FigureArea[1, 2].State);
+            Figures[idx].FigureArea[0, 0].State = StateRotator(tmp.FigureArea[2, 0].State);
+            Figures[idx].FigureArea[1, 0].State = StateRotator(tmp.FigureArea[2, 1].State);
+            Figures[idx].FigureArea[2, 0].State = StateRotator(tmp.FigureArea[2, 2].State);
+
+
+        }, parameter => parameter is int);
+        public ICommand InsertCommand => _insertCommand = new RelayCommand(parameter =>
+        {
+            int idx = (int)parameter;
+            Cell activeCell = Field.FirstOrDefault(x => x.Active);
+            Figure figure = Figures[idx];
+            if (activeCell != null)
+            {
+
+                if (IsCanInsert(activeCell, figure))
+                {
+                    Field field = new Field(Rows, Columns);
+                    for (int i = 0; i < Rows; ++i)
+                    {
+                        for (int j = 0; j < Columns; ++j)
+                        {
+                            field[i, j] = new Cell(i, j);
+                            field[i, j].State = Field[i, j].State;
+                        }
+                    }
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        for (int j = 0; j < 3; ++j)
+                        {
+                            int x = activeCell.Row + i - 1;
+                            int y = activeCell.Column + j - 1;
+                            Cell cell = figure.FigureArea[i, j];
+                            State state = cell.State;
+                            if (state == State.Empty) continue;
+                            if (Field[x, y].State == State.Empty)
+                            {
+                                field[x, y].State = state;
+                                continue;
+                            }
+                            if (Field[x, y].State == State.DownHalfRing || Field[x, y].State == State.UpHalfRing || state == State.DownHalfRing || state == State.UpHalfRing)
+                            {
+                                field[x, y].State = State.UpDownCompound;
+                            }
+                            if (Field[x, y].State == State.LeftHalfRing || Field[x, y].State == State.RightHalfRing || state == State.LeftHalfRing || state == State.RightHalfRing)
+                            {
+                                field[x, y].State = State.LeftRightCompound;
+                            }
+                            if (Field[x, y].State == State.DownHalfRingR || state == State.DownHalfRingR || Field[x, y].State == State.RightHalfRingL || state == State.RightHalfRingL)
+                            {
+                                field[x, y].State = State.RightDownCompound;
+                            }
+                            if (Field[x, y].State == State.DownHalfRingL || state == State.DownHalfRingL || Field[x, y].State == State.LeftHalfRingR || state == State.LeftHalfRingR)
+                            {
+                                field[x, y].State = State.LeftDownCompound;
+                            }
+                            if (Field[x, y].State == State.UpHalfRingR || state == State.UpHalfRingR || Field[x, y].State == State.LeftHalfRingL || state == State.LeftHalfRingL)
+                            {
+                                field[x, y].State = State.LeftUpCompound;
+                            }
+                            if (Field[x, y].State == State.UpHalfRingL || state == State.UpHalfRingL || Field[x, y].State == State.RightHalfRingR || state == State.RightHalfRingR)
+                            {
+                                field[x, y].State = State.RightUpCompound;
+                            }
+                        }
+                    }
+                    PrevField.Add(field);
+                    Field = field;
+                    if (Field.FirstOrDefault(x => x.State == State.Empty) == null)
+                    {
+                        IsCovered = true;
+                    }
+                }
+            }
+
+        }, parameter => parameter is int);
+        public ICommand NewGameCommand => _newGameCommand = new RelayCommand(parameter =>
+        {
+                       
+            PrevField = new List<Field>(0);
+            if (Rows * Columns > 2 * Holes)
+            {
+            
+                Field = new Field(Rows, Columns);
+                IsCovered = false;
+                GenerateHoles(Holes);
+                if (Figures == null)
+                {
+                    SetFigures();
+                }
+                PrevField.Add(Field);
+            }
+            
+        }, parameter => parameter is null);
+        public ICommand CancelCommand => _cancelCommand = new RelayCommand(parameter =>
+        {
+           if(PrevField.Count>1)
+            BackStep();
+        }, parameter => parameter is null);
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(string prop = "")
