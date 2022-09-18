@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         ResizeMode="NoResize"
@@ -10,13 +11,14 @@
     <Window.Resources>
         <local:VisibilityConventer x:Key="VisibilityConverter"/>
         <local:IsEnabledConverter x:Key="IsEnabledConverter"/>
-        
+
         <Style TargetType="ComboBox" x:Key="SizeComboBox">
             <Setter Property="Width" Value="120"/>
             <Setter Property="Height" Value="20"/>
             <Setter Property="SelectedIndex" Value="0"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
+
         </Style>
         <Style x:Key="RenderTriggers" TargetType="{x:Type Image}">
             <Style.Triggers >
@@ -123,74 +125,108 @@
                 <GradientStop Color="#FFB1C8C5" Offset="0.571"/>
             </LinearGradientBrush>
         </Grid.Background>
-        <TextBlock Text="Количество строк:" Margin="50,50,0,0" FontSize="13"/>
-        <ComboBox Name="RowsCount" Margin="50,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}"  >
-        </ComboBox>
-        <TextBlock Text="Количество столбцов:" Margin="200,50,0,0" FontSize="13"/>
-        <ComboBox Name="ColumnsCount" Margin="200,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}" >
-        </ComboBox>
-        <TextBlock Text="Количество дырок:" Margin="350,50,0,0" FontSize="13"/>
-        <ComboBox Name="HolesCount" Margin="350,80,0,0" Style="{StaticResource ResourceKey=SizeComboBox}" >
-        </ComboBox>
-        <Button Content="Создать"  Width="75"  HorizontalAlignment="Left" VerticalAlignment="Top"  Margin="500,80,0,0" Click="NewGame_Click" BorderBrush="#FF777E38" Foreground="#FF5309D4" FontWeight="Bold" FontFamily="Showcard Gothic" FontSize="14">
-            <Button.Background>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="Black" Offset="0"/>
-                    <GradientStop Color="#FF8FB8CB" Offset="1"/>
-                    <GradientStop Color="#FFF1FEFF" Offset="0.089"/>
-                </LinearGradientBrush>
-            </Button.Background>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" FontSize="25" FontWeight="Bold" FontFamily="Areal" Height="50" HorizontalAlignment="Center"  Visibility="{Binding IsCovered, Converter={StaticResource VisibilityConverter}}"><Run Text="Вы решили головоломку"/><Run Text="!"/></TextBlock>
+                <Grid Grid.Row="1" Margin="10,0,10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Количество строк:" FontSize="13"/>
+                        <ComboBox Name="RowsCount" Style="{StaticResource ResourceKey=SizeComboBox}"  SelectedItem="{Binding DataContext.Rows, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.RCSource, RelativeSource={RelativeSource AncestorType=Window}}">
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Количество столбцов:" FontSize="13"/>
+                        <ComboBox Name="ColumnsCount"  Style="{StaticResource ResourceKey=SizeComboBox}" SelectedItem="{Binding DataContext.Columns, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.RCSource, RelativeSource={RelativeSource AncestorType=Window}}">
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Количество дырок:" FontSize="13"/>
+                        <ComboBox Name="HolesCount"  Style="{StaticResource ResourceKey=SizeComboBox}" SelectedItem="{Binding DataContext.Holes, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.HolesSource, RelativeSource={RelativeSource AncestorType=Window}}">
+                        </ComboBox>
+                    </StackPanel>
 
-        </Button>
-
-
-        <ItemsControl Name="MainFieldControl" ItemsSource="{Binding Field}" HorizontalAlignment="Left" Width="639" Margin="0,0,0,0" Foreground="White" >
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Button Width="40" Height="40" Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding }">
-                        <Button.Style>
-
-                            <Style TargetType="{x:Type Button}">
-
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Active}" Value="true">
-                                        <Setter Property="BorderBrush" Value="Red" />
-                                        <Setter Property="BorderThickness" Value="2"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                        <Border Width="40" Height="40" >
-                            <Border.Style>
-                                <Style TargetType="{x:Type Border}">
-                                    <Setter Property="OverridesDefaultStyle" Value="True"/>
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="BorderBrush" Value="Gray"/>
-                                    <Setter Property="BorderThickness" Value="1"/>
-                                </Style>
-                            </Border.Style>
-                            <Image Style="{StaticResource RenderTriggers}">
-                            </Image>
-                        </Border>
+                    <Button Content="Создать" Grid.Column="3"   HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="#FF777E38" Foreground="#FF5309D4" FontWeight="Bold" FontFamily="Showcard Gothic" FontSize="14" Command="{Binding DataContext.NewGameCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="Black" Offset="0"/>
+                                <GradientStop Color="#FF8FB8CB" Offset="1"/>
+                                <GradientStop Color="#FFF1FEFF" Offset="0.089"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
                     </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid 
-                            Rows="{Binding Rows}" 
-                            Columns="{Binding Columns}"
+                </Grid>
+                <ItemsControl Grid.Row="2" Name="MainFieldControl" ItemsSource="{Binding Field}" HorizontalAlignment="Center" Margin="10,10,10,10" Foreground="White" >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Width="40" Height="40" Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding }">
+                                <Button.Style>
+
+                                    <Style TargetType="{x:Type Button}">
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Active}" Value="true">
+                                                <Setter Property="BorderBrush" Value="Red" />
+                                                <Setter Property="BorderThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <Border Width="40" Height="40" >
+                                    <Border.Style>
+                                        <Style TargetType="{x:Type Border}">
+                                            <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                            <Setter Property="Background" Value="White"/>
+                                            <Setter Property="BorderBrush" Value="Gray"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </Style>
+                                    </Border.Style>
+                                    <Image Style="{StaticResource RenderTriggers}">
+                                    </Image>
+                                </Border>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid 
+                            Rows="{Binding Field.Rows}" 
+                            Columns="{Binding Field.Columns}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                         />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+                <StackPanel Grid.Row="3" VerticalAlignment="Bottom">
+                    <Button x:Name="CancelBtn" Content="Отмена" 
+                    IsEnabled="{Binding PrevField, Converter={StaticResource IsEnabledConverter}}" 
+                    Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                    Background="#FFFB4668" FontSize="16" FontWeight="Bold"
+                    VerticalAlignment="Bottom"/>
+                    <Button x:Name="HelpButton" Content="Помощь" FontSize="16" FontWeight="Bold" Height="Auto" Background="White" VerticalAlignment="Bottom" Click="HelpButton_Click" />
+                </StackPanel>
+            </Grid>
+            <local:FigureGrid Foreground="White" BorderBrush="#FF5D1008" Background="#FFC3664C" BorderThickness="10" Grid.Column="1"  />
+        </Grid>
 
-        <local:FigureGrid Margin="639,0,0,0" Foreground="White" BorderBrush="#FF5D1008" Background="#FFC3664C" BorderThickness="10"/>
-        <TextBlock Text="Поле покрыто! Победа!" Margin="154,0,1022,819" FontSize="25" FontWeight="Bold" FontFamily="Areal" Height="50"  Visibility="{Binding IsCovered, Converter={StaticResource VisibilityConverter}}"/>
-        <Button x:Name="CancelBtn" Content="Отмена"  Width="100" Height="30" Margin="268,772,1106,59" IsEnabled="{Binding PrevField, Converter={StaticResource IsEnabledConverter}}" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}" Background="#FFFB0000" FontSize="16" FontWeight="Bold" Click="CancelBtn_Click" >
-        
-        </Button>
+
+
     </Grid>
 </Window>
