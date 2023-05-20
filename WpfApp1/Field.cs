@@ -66,6 +66,16 @@ namespace WpfApp1
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
+
+        public void clearField()
+        {
+            for (int i = 0; i < _area.GetLength(0); i++)
+                for (int j = 0; j < _area.GetLength(1); j++)
+                    if (_area[i,j].State != State.Empty && _area[i,j].State != State.Hole)
+                    {
+                        _area[i, j].State = State.Empty;  
+                    }
+        }
     }
 }
 

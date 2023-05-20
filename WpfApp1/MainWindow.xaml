@@ -221,6 +221,8 @@
                     Background="#FFFB4668" FontSize="16" FontWeight="Bold"
                     VerticalAlignment="Bottom"/>
                     <Button x:Name="HelpButton" Content="Помощь" FontSize="16" FontWeight="Bold" Height="Auto" Background="White" VerticalAlignment="Bottom" Click="HelpButton_Click" />
+                    <Button x:Name="dpButton" Content="Замостить(Динамическое программирование)" FontSize="16" FontWeight="Bold" Height="Auto" Background="LightCoral" VerticalAlignment="Bottom" Command="{Binding DataContext.DynamicProgCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Button x:Name="gaButton" Content="Замостить(Эвристический алгоритм)" FontSize="16" FontWeight="Bold" Height="Auto" Background="LightCoral" VerticalAlignment="Bottom" Command="{Binding DataContext.GreedyAlgCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </StackPanel>
             </Grid>
             <local:FigureGrid Foreground="White" BorderBrush="#FF5D1008" Background="#FFC3664C" BorderThickness="10" Grid.Column="1"  />

@@ -17,12 +17,15 @@ namespace WpfApp1
         private Field _field;
         private List<Field> _prevField = new List<Field>(0);
         private Figure[] _figures;
+        private ContextStrategy _contextStrategy = new ContextStrategy();
         private ICommand _cellCommand;
+        private ICommand _dynamicProgCommand;
+        private ICommand _greedyAlgCommand;
         private ICommand _insertCommand;
         private ICommand _rotateCommand;
         private ICommand _newGameCommand;
         private ICommand _cancelCommand;
-
+        
         public bool IsCovered
         {
             get => _isCovered;
@@ -127,7 +130,7 @@ namespace WpfApp1
         }
         public void SetFigures()
         {
-            Figure[] figures = new Figure[26];
+            Figure[] figures = new Figure[27];
 
             Figure f0 = new Figure();
             f0.FigureArea[1, 0].State = State.RightBall;
@@ -285,6 +288,10 @@ namespace WpfApp1
             f25.FigureArea[1, 2].State = State.LeftHalfRingR;
             f25.Index = 25;
 
+            Figure f26 = new Figure();
+            f26.FigureArea[1, 1].State = State.Hole; // hole
+            f26.Index = 26;
+
             figures[0] = f0;
             figures[1] = f1;
             figures[2] = f2;
@@ -311,6 +318,7 @@ namespace WpfApp1
             figures[23] = f23;
             figures[24] = f24;
             figures[25] = f25;
+            figures[26] = f26;
 
             Figures = figures;
         }
@@ -620,6 +628,28 @@ namespace WpfApp1
         {
            if(PrevField.Count>1)
             BackStep();
+        }, parameter => parameter is null);
+
+        public ICommand DynamicProgCommand => _dynamicProgCommand = new RelayCommand(parameter =>
+        {
+            if (Field != null)
+            {
+                Field.clearField();
+                _contextStrategy.setStrategy(new DynamicProgrammingStrategy());
+                _contextStrategy.executeStrategy(Field);
+            }
+            
+        }, parameter => parameter is null);
+
+        public ICommand GreedyAlgCommand => _greedyAlgCommand = new RelayCommand(parameter =>
+        {
+            if (Field != null)
+            {
+                Field.clearField();
+                _contextStrategy.setStrategy(new GreedyAlgorithmStrategy());
+                _contextStrategy.executeStrategy(Field);
+            }
+
         }, parameter => parameter is null);
 
         public event PropertyChangedEventHandler PropertyChanged;

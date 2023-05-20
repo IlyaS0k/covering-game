@@ -57,10 +57,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ComparableList.cs" />
+    <Compile Include="ContextStrategy.cs" />
     <Compile Include="controls\FigureGrid.xaml.cs">
       <DependentUpon>FigureGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DynamicProgrammingStrategy.cs" />
     <Compile Include="Figure.cs" />
+    <Compile Include="GreedyAlgorithmStrategy.cs" />
+    <Compile Include="IStrategy.cs" />
     <Compile Include="IsEnabledConverter.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="VisibilityConverter.cs" />
