@@ -19,55 +19,90 @@ namespace WpfApp1
         private const int _chainLengthMaximumWeight = 100;
         private const int _chainOfLength4Weight = 40;
         private const int _chainOfLength5Weight = 65;
-        private const int _chainOfLength7Weight = 80;
+        private const int _chainOfLength7Weight = 75;
         private Random random = new Random();
         public void executeStrategy(Field area)
         {
             setVisited(area);
             setVertexDegree(area);
             Tuple<int, int> currentVertex = getVertexWithMinimumDegree(area);
-            int tries = (area.Columns + area.Rows) * (area.Columns + area.Rows) * 10000;
+            int tries = (area.Columns + area.Rows) * (area.Columns + area.Rows) * 1000;
             List<ComparableList<Tuple<int, int>>> chains = new List<ComparableList<Tuple<int, int>>>();
             while (tries > 0)
             {
                 --tries;
-                int chainLength = generateRandomChainLength();
-                ComparableList<Tuple<int, int>> nextChain = new ComparableList<Tuple<int, int>>() { currentVertex };
-                nextChain = findRandomChain(area, currentVertex, 1, chainLength, nextChain);
-                if (nextChain != null)
-                {
-                    chains.Add(nextChain);
-                    foreach (Tuple<int, int> t in nextChain)
-                    {
-                        _visited[t.Item1][t.Item2] = chainLength;
-                    }
-                    calculateVertexDegree(area);
+               
+                    --tries;
                     currentVertex = getVertexWithMinimumDegree(area);
-                }
-
-                if (nextChain == null && getVertexWithMinimumDegree(area) != null)
-                {
-                    chains.Clear();
-                    setVisited(area);
-                    setVertexDegree(area);
-                }
-                if (getVertexWithMinimumDegree(area) == null)
-                {
-                    foreach (var c in chains)
+                    List<int> generatedLength = new List<int>();
+                    int chainLength = -1;
+                    int triesToGenerateLength = 10;
+                    ComparableList<Tuple<int, int>> nextChain = null;
+                    while (triesToGenerateLength-- > 0)
                     {
-                        fillField(area, c);
+                        chainLength = generateRandomChainLength();
+                        nextChain = new ComparableList<Tuple<int, int>>() { currentVertex };
+                        nextChain = findRandomChain(area, currentVertex, 1, chainLength, nextChain);//пытаемся такую найти
+                        if (nextChain != null) break;
+                        triesToGenerateLength--;
                     }
-                    break;
-                }
+                    if (nextChain != null)//нашли
+                    {
+                        chains.Add(nextChain);//добавляем в пул цепочек
+                        for (int i = 0; i < nextChain.Count; ++i)
+                        {
+                            _visited[nextChain[i].Item1][nextChain[i].Item2] = chainLength;//отмечаем вершины помечеными
+                            if (i == 0 && chainLength != 4)
+                                _bounds[nextChain[i].Item1][nextChain[i].Item2] = chains.Count;
+                            if (i == nextChain.Count - 1 && chainLength != 4)
+                                _bounds[nextChain[i].Item1][nextChain[i].Item2] = -chains.Count;
+
+                        }
+                        calculateVertexDegree(area);//пересчитываем степени вершин
+                        currentVertex = getVertexWithMinimumDegree(area);//берем новую вершину с минимальной степенью
+                    }
+                    bool over = nextChain == null || currentVertex == null;
+                    if (over)
+                    {
+                        Tuple<int, int> prevVertex = currentVertex;
+                        tryToIncreaseChain(area, chains);
+                        currentVertex = getVertexWithMinimumDegree(area);
+                        if (currentVertex != null && currentVertex.Item1 == prevVertex.Item1 && currentVertex.Item2 == prevVertex.Item2)
+                        {
+                            currentVertex = null;
+                        }
+                        over = currentVertex == null;
+                    }
+                    if (over)
+                    {
+
+                        if (!isFilled(area))// не нашли цепочку но есть непокрытые вершины
+                        {
+
+
+                            chains.Clear();//все заново делаем
+                            setVisited(area);
+                            setVertexDegree(area);
+                        }
+                        else//не нашли но вершин нет непокрытых тогда рисуем
+                        {
+                            foreach (var c in chains)
+                            {
+                                fillField(area, c);
+                            }
+                            break;
+                        }
+                    }
+                
             }
         }
         private void tryToIncreaseChain(Field area, List<ComparableList<Tuple<int, int>>> chains)
         {
-            for (int r = 1; r < area.Rows - 1; ++r)
+            for (int r = 0; r < area.Rows; ++r)
             {
-                for (int c = 1; c < area.Columns; ++c)
+                for (int c = 0; c < area.Columns; ++c)
                 {
-                    if (_visited[r][c] != 0) continue;
+                    if (!inBounds(area,r,c) || _visited[r][c] != 0) continue;
                     int[,] steps = new int[4, 2] {
                         {1, 0},
                         {0, 1},
@@ -94,7 +129,7 @@ namespace WpfApp1
                                         chains[chainIndex].Insert(0, Tuple.Create(r, c));
                                         chains[chainIndex].Insert(0, Tuple.Create(nr, nc));
                                         _bounds[r1][c1] = 0;
-                                        _bounds[nr][nc] = chainIndex;
+                                        _bounds[nr][nc] = chainIndex + 1;
                                     }
                                     else
                                     {
@@ -102,12 +137,12 @@ namespace WpfApp1
                                         chains[chainIndex].Add(Tuple.Create(r, c));
                                         chains[chainIndex].Add(Tuple.Create(nr, nc));
                                         _bounds[r1][c1] = 0;
-                                        _bounds[nr][nc] = -chainIndex;
+                                        _bounds[nr][nc] = -chainIndex - 1;
                                     }
                                     _visited[nr][nc] = 1;
                                     _visited[r][c] = 1;
-                                    d = 5;
-                                    break;
+                                    tryToIncreaseChain(area, chains);
+                                    return;
                                     
                                 }
                             }
@@ -124,7 +159,7 @@ namespace WpfApp1
                                         chainIndex = _bounds[r1][c1] - 1;
                                         chains[chainIndex].Insert(0, Tuple.Create(nr,nc));
                                         chains[chainIndex].Insert(0, Tuple.Create(r, c));
-                                        _bounds[r][c] = chainIndex;
+                                        _bounds[r][c] = chainIndex + 1;
                                         _bounds[r1][c1] = 0;
                                     }
                                     else
@@ -132,13 +167,13 @@ namespace WpfApp1
                                         chainIndex = -_bounds[r1][c1] - 1;
                                         chains[chainIndex].Add(Tuple.Create(nr, nc));
                                         chains[chainIndex].Add(Tuple.Create(r, c));
-                                        _bounds[r][c] = -chainIndex;
+                                        _bounds[r][c] = -chainIndex - 1;
                                         _bounds[r1][c1] = 0;
                                     }
                                     _visited[nr][nc] = 1;
                                     _visited[r][c] = 1;
-                                    d = 5;
-                                    break;
+                                    tryToIncreaseChain(area, chains);
+                                    return;
                                 }
                             }
                         }
@@ -356,11 +391,17 @@ namespace WpfApp1
             return Tuple.Create(x, y - 1);
         }
 
-        private bool isFilled()
+        private bool isFilled(Field area)
         {
-            foreach (var l in _visited)
+            for (int r = 0; r < _visited.Count; ++r)
             {
-                if (l.Min() == 0) return false;
+               for (int c = 0; c < _visited[r].Count; ++c)
+                {
+                    if (area[r,c].State != State.Hole && _visited[r][c] == 0)
+                    {
+                        return false;
+                    }
+                }
             }
             return true;
         }
