@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 
@@ -645,9 +646,13 @@ namespace WpfApp1
         {
             if (Field != null)
             {
+                var sw = new Stopwatch();
+                sw.Start();
                 Field.clearField();
                 _contextStrategy.setStrategy(new GreedyAlgorithmStrategy());
                 _contextStrategy.executeStrategy(Field);
+                sw.Stop();
+                var res = sw.Elapsed;
             }
 
         }, parameter => parameter is null);

@@ -17,7 +17,7 @@ namespace WpfApp1
         private List<List<int>> _holeCounter;
         private List<List<int>> _visited;
 
-        public void executeStrategy(Field area)
+        public bool executeStrategy(Field area)
         {
             countHoles(area);
             setCords(area);
@@ -37,6 +37,7 @@ namespace WpfApp1
                     }
                 }
             }
+            return true;
         }
 
         private void coverComponent(Field area, ComparableList<Tuple<int, int, int>> cells, SortedSet<ComparableList<Tuple<int,int,int, int>>> chains, int row, int col)

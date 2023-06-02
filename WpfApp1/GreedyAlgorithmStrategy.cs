@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Effects;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace WpfApp1
@@ -15,28 +16,34 @@ namespace WpfApp1
     {
         private List<List<int>> _visited;
         private List<List<int>> _bounds;
+        private List<List<Tuple<int,int>>> _extremeVertex;
         private List<List<int>> _vertexDegree;
+        int[,] _used;
         private const int _chainLengthMaximumWeight = 100;
         private const int _chainOfLength4Weight = 40;
         private const int _chainOfLength5Weight = 65;
         private const int _chainOfLength7Weight = 75;
         private Random random = new Random();
-        public void executeStrategy(Field area)
+        int[,] steps = new int[4, 2] {
+                        {1, 0},
+                        {0, 1},
+                        {-1,0},
+                        {0,-1}
+                    };
+        public bool executeStrategy(Field area)
         {
+            _used = new int[area.Rows, area.Columns];
             setVisited(area);
             setVertexDegree(area);
             Tuple<int, int> currentVertex = getVertexWithMinimumDegree(area);
-            int tries = (area.Columns + area.Rows) * (area.Columns + area.Rows) * 1000;
+            int tries = (area.Columns + area.Rows) * (area.Columns + area.Rows) * 500;
             List<ComparableList<Tuple<int, int>>> chains = new List<ComparableList<Tuple<int, int>>>();
             while (tries > 0)
             {
-                --tries;
-               
-                    --tries;
+                  --tries;
                     currentVertex = getVertexWithMinimumDegree(area);
-                    List<int> generatedLength = new List<int>();
                     int chainLength = -1;
-                    int triesToGenerateLength = 10;
+                    int triesToGenerateLength = 7;
                     ComparableList<Tuple<int, int>> nextChain = null;
                     while (triesToGenerateLength-- > 0)
                     {
@@ -51,11 +58,23 @@ namespace WpfApp1
                         chains.Add(nextChain);//добавляем в пул цепочек
                         for (int i = 0; i < nextChain.Count; ++i)
                         {
-                            _visited[nextChain[i].Item1][nextChain[i].Item2] = chainLength;//отмечаем вершины помечеными
-                            if (i == 0 && chainLength != 4)
-                                _bounds[nextChain[i].Item1][nextChain[i].Item2] = chains.Count;
-                            if (i == nextChain.Count - 1 && chainLength != 4)
-                                _bounds[nextChain[i].Item1][nextChain[i].Item2] = -chains.Count;
+                        int x = nextChain[i].Item1;
+                        int y = nextChain[i].Item2;
+                        _visited[x][y] = chainLength;//отмечаем вершины помечеными
+
+                        if (i == 0 && chainLength != 4)
+                        {
+                            _bounds[x][y] = chains.Count;
+                            _extremeVertex[x][y] = 
+                                Tuple.Create(nextChain[nextChain.Count - 1].Item1, nextChain[nextChain.Count - 1].Item2);
+                        }
+                        if (i == nextChain.Count - 1 && chainLength != 4)
+                        {
+                            _bounds[x][y] = -chains.Count;
+                            _extremeVertex[x][y] =
+                                Tuple.Create(nextChain[0].Item1, nextChain[0].Item2);
+
+                        }
 
                         }
                         calculateVertexDegree(area);//пересчитываем степени вершин
@@ -64,6 +83,24 @@ namespace WpfApp1
                     bool over = nextChain == null || currentVertex == null;
                     if (over)
                     {
+                        while (true)
+                        {
+                          Tuple<int,int> beginOfPath = findIsolatedVertex(area);
+                          if (beginOfPath == null) break;
+                          Tuple<int, int> endVertex = null;
+                          List<Tuple<int,int>> chainNumbers = new List<Tuple<int,int>>();
+                          for (int i = 0; i < area.Rows; ++i)
+                          {
+                            for (int j = 0; j < area.Columns; ++j)
+                            {
+                                _used[i, j] = 0; 
+                            }
+                          }
+                          Tuple<int, int> current = beginOfPath;
+                          Tuple<int,int> endOfPath = findPathChainsSeq(area, beginOfPath, endVertex, current, chainNumbers);
+                          if (endOfPath == null) break;
+                          moveChainSeq(area, chainNumbers, chains, beginOfPath, endOfPath);
+                        }
                         Tuple<int, int> prevVertex = currentVertex;
                         tryToIncreaseChain(area, chains);
                         currentVertex = getVertexWithMinimumDegree(area);
@@ -90,11 +127,125 @@ namespace WpfApp1
                             {
                                 fillField(area, c);
                             }
+                        return true;
                             break;
                         }
                     }
                 
             }
+            return false;
+        }
+
+        private Tuple<int,int> findIsolatedVertex(Field area)
+        {
+            for (int r = 0; r < area.Rows; ++r)
+            {
+                for (int c = 0; c < area.Columns; ++c)
+                {
+                    if (isIsolatedVertex(area, r, c)) return Tuple.Create(r, c);
+                }
+            }
+            return null;
+        }
+        private Tuple<int,int> findPathChainsSeq(Field area, Tuple<int,int> firstVertex, Tuple<int, int> lastVertex, Tuple<int,int> currentVertex, List<Tuple<int,int>> chainNumbers)
+        {
+            
+            int x = currentVertex.Item1;
+            int y = currentVertex.Item2;
+            _used[x, y] = 1;
+
+                for (int d = 0; d < 4; ++d)
+                {
+                    int nx = x + steps[d, 0];
+                    int ny = y + steps[d, 1];
+                    if (inBounds(area, nx, ny) && _visited[nx][ny] != 0 && _bounds[nx][ny] != 0 && _used[nx, ny] == 0)
+                    {
+                        _used[nx,ny] = 1;
+                        int tail = _bounds[nx][ny] > 0 ? 1 : -1;
+                        int number = Math.Abs(_bounds[nx][ny]) - 1;
+                        Tuple<int,int> tuple = Tuple.Create(number, tail);
+                        chainNumbers.Add(tuple);
+                        Tuple<int, int> nextVertex = _extremeVertex[nx][ny];
+                        lastVertex = findPathChainsSeq(area, firstVertex, lastVertex, nextVertex, chainNumbers);
+                        if (lastVertex != null) return lastVertex;
+                        chainNumbers.Remove(tuple);
+                    }
+                    if (lastVertex != null) return lastVertex;
+                    if (currentVertex != firstVertex && inBounds(area, nx, ny) && isIsolatedVertex(area, nx, ny) && _used[nx, ny] == 0)
+                    {
+                       _used[nx,ny] = 1;
+                       return Tuple.Create(nx, ny);
+                    }
+                    if (lastVertex != null) return lastVertex;
+                }
+            return lastVertex;
+        }
+        private void moveChainSeq(Field area, List<Tuple<int, int>> chainNumber, List<ComparableList<Tuple<int, int>>> chains, Tuple<int,int> firstVertex, Tuple<int,int> lastVertex)
+        {
+            List<List<int>> prevBounds = new List<List<int>>(area.Rows);
+            List<List<Tuple<int,int>>> prevExtreme = new List<List<Tuple<int,int>>>(area.Rows);
+            for (int i = 0; i < area.Rows; ++i)
+            {
+                prevBounds.Add(new List<int>());
+                prevExtreme.Add(new List<Tuple<int,int>>());
+                for (int j = 0; j < area.Columns; ++j)
+                {
+                    prevBounds[i].Add(_bounds[i][j]);
+                    prevExtreme[i].Add(_extremeVertex[i][j]);
+                }
+            }
+            _visited[firstVertex.Item1][firstVertex.Item2] = chains[chainNumber[0].Item1].Count;
+            for (int i = chainNumber.Count - 1; i >= 0; --i)
+            {
+                int number = chainNumber[i].Item1;
+                int tail = chainNumber[i].Item2;
+                Tuple<int, int> last = tail > 0 ? chains[number][chains[number].Count - 1] : chains[number][0];
+                Tuple<int, int> prev = tail > 0 ? chains[number][chains[number].Count - 2] : chains[number][1];
+                Tuple<int, int> first = tail < 0 ? chains[number][chains[number].Count - 1] : chains[number][0];
+                Tuple<int, int> prevFirst;
+                if (i == 0) { prevFirst = firstVertex; }
+                else {
+                    int prevNumber = chainNumber[i - 1].Item1;
+                    int prevTail = chainNumber[i - 1].Item2;    
+                    prevFirst = prevTail > 0? chains[prevNumber][chains[prevNumber].Count - 1] : chains[prevNumber][0];
+                }
+                if (i == chainNumber.Count - 1)
+                _visited[last.Item1][last.Item2] = 0;
+                _bounds[prev.Item1][prev.Item2] = prevBounds[last.Item1][last.Item2];
+                _bounds[prevFirst.Item1][prevFirst.Item2] = prevBounds[first.Item1][first.Item2];
+                _bounds[last.Item1][last.Item2] = 0;
+                _bounds[first.Item1][first.Item2] = 0;
+                _extremeVertex[last.Item1][last.Item2] = null;
+                _extremeVertex[first.Item1][first.Item2] = null;
+                _extremeVertex[prev.Item1][prev.Item2] = Tuple.Create(prevFirst.Item1, prevFirst.Item2);
+                _extremeVertex[prevFirst.Item1][prev.Item2] = Tuple.Create(prev.Item1, prev.Item2);
+                if (tail > 0)
+                {
+                    chains[number].RemoveAt(chains[number].Count - 1);
+                    chains[number].Insert(0, prevFirst);
+                }
+                else
+                {
+                    chains[number].RemoveAt(0);
+                    chains[number].Add(prevFirst);
+                }
+            }
+            calculateVertexDegree(area);
+        }
+        private bool isIsolatedVertex(Field area, int r, int c)
+        {
+            if (!inBounds(area, r, c) || _visited[r][c] != 0) return false;
+            bool isolated = true;
+            for (int d = 0; d < 4; ++d)
+            {
+                int nr = r + steps[d, 0];
+                int nc = c + steps[d, 1];
+                if (inBounds(area, nr, nc) && _visited[nr][nc] == 0)
+                {
+                    isolated = false;
+                }
+            }
+            return isolated;
         }
         private void tryToIncreaseChain(Field area, List<ComparableList<Tuple<int, int>>> chains)
         {
@@ -103,12 +254,6 @@ namespace WpfApp1
                 for (int c = 0; c < area.Columns; ++c)
                 {
                     if (!inBounds(area,r,c) || _visited[r][c] != 0) continue;
-                    int[,] steps = new int[4, 2] {
-                        {1, 0},
-                        {0, 1},
-                        {-1,0},
-                        {0,-1}
-                    };
                     for (int d = 0; d < 4; ++d)
                     {
                         int nr = r + steps[d, 0];
@@ -130,6 +275,8 @@ namespace WpfApp1
                                         chains[chainIndex].Insert(0, Tuple.Create(nr, nc));
                                         _bounds[r1][c1] = 0;
                                         _bounds[nr][nc] = chainIndex + 1;
+         
+
                                     }
                                     else
                                     {
@@ -139,6 +286,11 @@ namespace WpfApp1
                                         _bounds[r1][c1] = 0;
                                         _bounds[nr][nc] = -chainIndex - 1;
                                     }
+                                    _extremeVertex[nr][nc] = _extremeVertex[r1][c1];
+                                    _extremeVertex[r1][c1] = null;
+                                    int ex = _extremeVertex[nr][nc].Item1;
+                                    int ey = _extremeVertex[nr][nc].Item2;
+                                    _extremeVertex[ex][ey] = Tuple.Create(nr, nc);
                                     _visited[nr][nc] = 1;
                                     _visited[r][c] = 1;
                                     tryToIncreaseChain(area, chains);
@@ -170,6 +322,11 @@ namespace WpfApp1
                                         _bounds[r][c] = -chainIndex - 1;
                                         _bounds[r1][c1] = 0;
                                     }
+                                    _extremeVertex[r][c] = _extremeVertex[r1][c1];
+                                    _extremeVertex[r1][c1] = null;
+                                    int ex = _extremeVertex[r][c].Item1;
+                                    int ey = _extremeVertex[r][c].Item2;
+                                    _extremeVertex[ex][ey] = Tuple.Create(r, c);
                                     _visited[nr][nc] = 1;
                                     _visited[r][c] = 1;
                                     tryToIncreaseChain(area, chains);
@@ -205,14 +362,17 @@ namespace WpfApp1
         {
             _visited = new List<List<int>>();
             _bounds = new List<List<int>>();
+            _extremeVertex = new List<List<Tuple<int, int>>>();
             for (int r = 0; r < area.Rows; ++r)
             {
                 _visited.Add(new List<int>());
                 _bounds.Add(new List<int>());
+                _extremeVertex.Add(new List<Tuple<int, int>>());    
                 for (int c = 0; c < area.Columns; ++c)
                 {
                     _visited[r].Add(0);
                     _bounds[r].Add(0);
+                    _extremeVertex[r].Add(Tuple.Create(0, 0));
                 }
             }
             for (int r = 0; r < area.Rows; ++r)
@@ -221,6 +381,7 @@ namespace WpfApp1
                 {
                     _visited[r][c] = 0;
                     _bounds[r][c] = 0;
+                    _extremeVertex[r][c] = null;
                 }
             }
         }
@@ -233,12 +394,6 @@ namespace WpfApp1
                 for (int c = 0; c < area.Columns; ++c)
                 {
                     _vertexDegree[r].Add(0);
-                    int[,] steps = new int[4, 2] { 
-                        {1,0}, 
-                        {0,1}, 
-                        {-1,0}, 
-                        {0,-1} 
-                    };
                     for (int delta = 0; delta < 4; ++delta)
                     {
                         if (inBounds(area, r + steps[delta, 0], c + steps[delta,1]) == true)

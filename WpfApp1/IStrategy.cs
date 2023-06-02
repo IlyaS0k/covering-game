@@ -8,6 +8,6 @@ namespace WpfApp1
 {
     interface IStrategy
     {
-       void executeStrategy(Field area);
+       bool executeStrategy(Field area);
     }
 }
