@@ -15,9 +15,9 @@ namespace WpfApp1
             _strategy = strategy;
         }
         
-        public void executeStrategy(Field area)
+        public int executeStrategy(Field area)
         {
-           _strategy.executeStrategy(area);
+           return _strategy.executeStrategy(area);
         }
 
     }

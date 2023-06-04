@@ -30,17 +30,25 @@ namespace WpfApp1
                         {-1,0},
                         {0,-1}
                     };
-        public bool executeStrategy(Field area)
+        public int executeStrategy(Field area)
         {
             _used = new int[area.Rows, area.Columns];
+            for (int i = 0; i <area.Rows;++i)
+                for (int j = 0; j < area.Columns; ++j)
+                {
+                    if (_used[i,j] == 0 && area[i,j].State != State.Hole)
+                    {
+                        if (scanComponent(area, i, j) < 3) return -1;
+                    }
+                }
             setVisited(area);
             setVertexDegree(area);
             Tuple<int, int> currentVertex = getVertexWithMinimumDegree(area);
-            int tries = (area.Columns + area.Rows) * (area.Columns + area.Rows) * 500;
+            int tries = 0;
             List<ComparableList<Tuple<int, int>>> chains = new List<ComparableList<Tuple<int, int>>>();
-            while (tries > 0)
+            while (tries < 30000)
             {
-                  --tries;
+                  ++tries;
                     currentVertex = getVertexWithMinimumDegree(area);
                     int chainLength = -1;
                     int triesToGenerateLength = 7;
@@ -122,20 +130,35 @@ namespace WpfApp1
                             setVertexDegree(area);
                         }
                         else//не нашли но вершин нет непокрытых тогда рисуем
-                        {
+                        { 
                             foreach (var c in chains)
                             {
                                 fillField(area, c);
                             }
-                        return true;
+                        return tries;
                             break;
                         }
                     }
                 
             }
-            return false;
+            return -1;
         }
 
+        private int scanComponent(Field area, int x , int y)
+        {
+            _used[x, y] = 1;
+            int result = 1;
+            for (int d = 0; d < 4; ++d)
+            {
+                int nx = x + steps[d, 0];
+                int ny = y + steps[d, 1];
+                if (inBounds(area, nx, ny) && _used[nx,ny] == 0)
+                {
+                    result += scanComponent(area, nx, ny);
+                }
+            }
+            return result;
+        }
         private Tuple<int,int> findIsolatedVertex(Field area)
         {
             for (int r = 0; r < area.Rows; ++r)
@@ -218,7 +241,7 @@ namespace WpfApp1
                 _extremeVertex[last.Item1][last.Item2] = null;
                 _extremeVertex[first.Item1][first.Item2] = null;
                 _extremeVertex[prev.Item1][prev.Item2] = Tuple.Create(prevFirst.Item1, prevFirst.Item2);
-                _extremeVertex[prevFirst.Item1][prev.Item2] = Tuple.Create(prev.Item1, prev.Item2);
+                _extremeVertex[prevFirst.Item1][prevFirst.Item2] = Tuple.Create(prev.Item1, prev.Item2);
                 if (tail > 0)
                 {
                     chains[number].RemoveAt(chains[number].Count - 1);

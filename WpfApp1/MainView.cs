@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Windows.Automation.Peers;
 using System.Windows.Input;
 
 namespace WpfApp1
@@ -13,7 +15,7 @@ namespace WpfApp1
         private int _columns = 2;
         private int _holes = 0;
         private bool _isCovered = false;
-        private List<int> _rcSource = Enumerable.Range(2, 14).ToList();
+        private List<int> _sizeSource = Enumerable.Range(2, 14).ToList();
         private List<int> _holesSource = Enumerable.Range(0, 100).ToList();
         private Field _field;
         private List<Field> _prevField = new List<Field>(0);
@@ -90,12 +92,12 @@ namespace WpfApp1
                 OnPropertyChanged("Holes");
             }
         }
-        public List<int> RCSource
+        public List<int> SizeSource
         {
-            get => _rcSource;
+            get => _sizeSource;
             set
             {
-                _rcSource = value;
+                _sizeSource = value;
                 OnPropertyChanged();
             }
         }
@@ -109,7 +111,7 @@ namespace WpfApp1
             }
         }
 
-        public void BackStep()
+        private void BackStep()
         {
             if (PrevField.Count == 1) return;
             PrevField.RemoveAt(PrevField.Count - 1);
@@ -323,186 +325,8 @@ namespace WpfApp1
 
             Figures = figures;
         }
-        public bool IsCanInsert(Cell activeCell, Figure figure)
-        {
-
-            for (int i = 0; i < 3; ++i)
-            {
-                for (int j = 0; j < 3; ++j)
-                {
-                    int x = activeCell.Row + i - 1;
-                    int y = activeCell.Column + j - 1;
-                    Cell cell = figure.FigureArea[i, j];
-                    State state = cell.State;
-                    if (state == State.Empty) continue;
-                    if (x < 0 || y < 0) return false;
-                    if (x >= Rows || y >= Columns) return false;
-                    if (StateSwitcher(state, Field[x, y].State) == false && StateSwitcher(Field[x, y].State, state) == false)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-        bool StateSwitcher(State state, State insertedState)
-        {
-            switch (insertedState)
-            {
-                case State.Empty:
-                    {
-                        return true;
-                    }
-
-                case State.DownHalfRing:
-                    {
-                        if (state != State.UpBall)
-                            return false;
-                        else
-                            return true;
-                    }
-                case State.DownHalfRingL:
-                    {
-                        if (state != State.LeftBall)
-                            return false;
-                        else
-                            return true;
-                    }
-                case State.DownHalfRingR:
-                    {
-                        if (state != State.RightBall)
-                            return false;
-                        else
-                            return true;
-                    }
-
-                case State.LeftHalfRing:
-                    {
-                        if (state != State.RightBall)
-                            return false;
-                        else
-                            return true;
-                    }
-
-                case State.LeftHalfRingL:
-                    {
-                        if (state != State.UpBall)
-                            return false;
-                        else
-                            return true;
-                    }
-                case State.LeftHalfRingR:
-                    {
-                        if (state != State.DownBall)
-                            return false;
-                        else
-                            return true;
-                    }
-
-                case State.RightHalfRing:
-                    {
-                        if (state != State.LeftBall)
-                            return false;
-                        else
-                            return true;
-
-                    }
-                case State.RightHalfRingL:
-                    {
-                        if (state != State.DownBall)
-                            return false;
-                        else
-                            return true;
-
-                    }
-                case State.RightHalfRingR:
-                    {
-                        if (state != State.UpBall)
-                            return false;
-                        else
-                            return true;
-
-                    }
-                case State.UpHalfRing:
-                    {
-                        if (state != State.DownBall)
-                            return false;
-                        else
-                            return true;
-                    }
-                case State.UpHalfRingL:
-                    {
-                        if (state != State.RightBall)
-                            return false;
-                        else
-                            return true;
-                    }
-                case State.UpHalfRingR:
-                    {
-                        if (state != State.LeftBall)
-                            return false;
-                        else
-                            return true;
-                    }
-
-
-                default: { return false; }
-
-            }
-        }
-        State StateRotator(State state)
-        {
-            switch (state)
-            {
-                case State.UpBall: return State.RightBall;
-
-                case State.LeftBall: return State.UpBall;
-
-                case State.DownBall: return State.LeftBall;
-
-                case State.RightBall: return State.DownBall;
-
-                case State.UpHalfRing: return State.RightHalfRing;
-
-                case State.LeftHalfRing: return State.UpHalfRing;
-
-                case State.DownHalfRing: return State.LeftHalfRing;
-
-                case State.RightHalfRing: return State.DownHalfRing;
-
-                case State.LeftRightRing: return State.UpDownRing;
-
-                case State.UpDownRing: return State.LeftRightRing;
-
-                case State.LeftUpRing: return State.RightUpRing;
-
-                case State.LeftDownRing: return State.LeftUpRing;
-
-                case State.RightDownRing: return State.LeftDownRing;
-
-                case State.RightUpRing: return State.RightDownRing;
-
-                case State.DownHalfRingL: return State.LeftHalfRingL;
-
-                case State.DownHalfRingR: return State.LeftHalfRingR;
-
-                case State.LeftHalfRingL: return State.UpHalfRingL;
-
-                case State.LeftHalfRingR: return State.UpHalfRingR;
-
-                case State.RightHalfRingL: return State.DownHalfRingL;
-
-                case State.RightHalfRingR: return State.DownHalfRingR;
-
-                case State.UpHalfRingL: return State.RightHalfRingL;
-
-                case State.UpHalfRingR: return State.RightHalfRingR;
-
-                default: return state;
-            }
-
-        }
-
+       
+       
         public ICommand CellCommand => _cellCommand = new RelayCommand(parameter =>
         {
             Cell cell = (Cell)parameter;
@@ -526,15 +350,15 @@ namespace WpfApp1
                 }
             }
 
-            Figures[idx].FigureArea[0, 2].State = StateRotator(tmp.FigureArea[0, 0].State);
-            Figures[idx].FigureArea[1, 2].State = StateRotator(tmp.FigureArea[0, 1].State);
-            Figures[idx].FigureArea[2, 2].State = StateRotator(tmp.FigureArea[0, 2].State);
-            Figures[idx].FigureArea[0, 1].State = StateRotator(tmp.FigureArea[1, 0].State);
-            Figures[idx].FigureArea[1, 1].State = StateRotator(tmp.FigureArea[1, 1].State);
-            Figures[idx].FigureArea[2, 1].State = StateRotator(tmp.FigureArea[1, 2].State);
-            Figures[idx].FigureArea[0, 0].State = StateRotator(tmp.FigureArea[2, 0].State);
-            Figures[idx].FigureArea[1, 0].State = StateRotator(tmp.FigureArea[2, 1].State);
-            Figures[idx].FigureArea[2, 0].State = StateRotator(tmp.FigureArea[2, 2].State);
+            Figures[idx].FigureArea[0, 2].State =  StateUtils.rotate(tmp.FigureArea[0, 0].State);
+            Figures[idx].FigureArea[1, 2].State =  StateUtils.rotate(tmp.FigureArea[0, 1].State);
+            Figures[idx].FigureArea[2, 2].State =  StateUtils.rotate(tmp.FigureArea[0, 2].State);
+            Figures[idx].FigureArea[0, 1].State =  StateUtils.rotate(tmp.FigureArea[1, 0].State);
+            Figures[idx].FigureArea[1, 1].State =  StateUtils.rotate(tmp.FigureArea[1, 1].State);
+            Figures[idx].FigureArea[2, 1].State =  StateUtils.rotate(tmp.FigureArea[1, 2].State);
+            Figures[idx].FigureArea[0, 0].State =  StateUtils.rotate(tmp.FigureArea[2, 0].State);
+            Figures[idx].FigureArea[1, 0].State =  StateUtils.rotate(tmp.FigureArea[2, 1].State);
+            Figures[idx].FigureArea[2, 0].State =  StateUtils.rotate(tmp.FigureArea[2, 2].State);
 
 
         }, parameter => parameter is int);
@@ -546,7 +370,7 @@ namespace WpfApp1
             if (activeCell != null)
             {
 
-                if (IsCanInsert(activeCell, figure))
+                if (Field.canInsert(activeCell.Row, activeCell.Column, figure))
                 {
                     Field field = new Field(Rows, Columns);
                     for (int i = 0; i < Rows; ++i)
@@ -635,7 +459,7 @@ namespace WpfApp1
         {
             if (Field != null)
             {
-                Field.clearField();
+                Field.clear();
                 _contextStrategy.setStrategy(new DynamicProgrammingStrategy());
                 _contextStrategy.executeStrategy(Field);
             }
@@ -644,16 +468,17 @@ namespace WpfApp1
 
         public ICommand GreedyAlgCommand => _greedyAlgCommand = new RelayCommand(parameter =>
         {
-            if (Field != null)
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-                Field.clearField();
-                _contextStrategy.setStrategy(new GreedyAlgorithmStrategy());
-                _contextStrategy.executeStrategy(Field);
-                sw.Stop();
-                var res = sw.Elapsed;
-            }
+            
+                if (Field != null)
+                {
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    Field.clear();
+                    _contextStrategy.setStrategy(new GreedyAlgorithmStrategy());
+                    _contextStrategy.executeStrategy(Field);
+                    sw.Stop();
+                    var res = sw.Elapsed;
+                }
 
         }, parameter => parameter is null);
 

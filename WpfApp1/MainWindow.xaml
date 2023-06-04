@@ -148,12 +148,12 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Количество строк:" FontSize="13"/>
-                        <ComboBox Name="RowsCount" Style="{StaticResource ResourceKey=SizeComboBox}"  SelectedItem="{Binding DataContext.Rows, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.RCSource, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <ComboBox Name="RowsCount" Style="{StaticResource ResourceKey=SizeComboBox}"  SelectedItem="{Binding DataContext.Rows, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.SizeSource, RelativeSource={RelativeSource AncestorType=Window}}">
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Grid.Column="1">
                         <TextBlock Text="Количество столбцов:" FontSize="13"/>
-                        <ComboBox Name="ColumnsCount"  Style="{StaticResource ResourceKey=SizeComboBox}" SelectedItem="{Binding DataContext.Columns, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.RCSource, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <ComboBox Name="ColumnsCount"  Style="{StaticResource ResourceKey=SizeComboBox}" SelectedItem="{Binding DataContext.Columns, RelativeSource={RelativeSource AncestorType=Window}}" ItemsSource="{Binding DataContext.SizeSource, RelativeSource={RelativeSource AncestorType=Window}}">
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
